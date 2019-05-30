@@ -45,6 +45,7 @@ Check if the column contains NULLs
 '''
 def if_null(data, colname):
     '''
+    Check if a feature has null value
     Input: data(dataframe)，colname(str)
     '''
     return data[colname].isnull().values.any()
@@ -54,6 +55,7 @@ Find the distribution of a variable in the dataset
 '''
 def describe_data(data, colname):
     '''
+    Describe a feature
     Input: data(dataframe), colname(str)
     '''
     return data[colname].describe()
@@ -134,6 +136,9 @@ def label_to_dummy(item, bar):
         result = 0
     return result
 
+'''
+Convert the binary categorical feature to dummy variables
+'''
 def cat_to_dummy(item, bar):
     '''
     item: str
@@ -169,7 +174,6 @@ def slice_time_data(data, column, start_time, end_time):
     '''
     return data[(data[column] >= start_time) & (data[column] <= end_time)]
 
-
 '''
 The following codes are referenced from the folloiwng website:
 https://github.com/rayidghani/magicloops/blob/master/simpleloop.py, credit to Rayid Ghani
@@ -193,38 +197,49 @@ def define_clfs_params():
         'GB': {'n_estimators': [1,10,100], 'max_features': [3,5,10]},
         'DT': {'criterion': ['gini', 'entropy'], 'max_depth': [1,5,10]},
         'SVM' :{'penalty':['l1','l2'], 'C' :[0.01,0.1,1]},
-        'KNN' :{'n_neighbors': [1,5,10,25],'weights': ['uniform','distance']},
+        'KNN' :{'n_neighbors': [1,5,25],'weights': ['uniform','distance']},
         'NB': {}
         }
     
     return clfs, grid
     
 
-
+'''
+Sort two columns in descending order
+'''
 def joint_sort_descending(l1, l2):
     idx = np.argsort(l1)[::-1]
     return l1[idx], l2[idx]
 
-
+'''
+Generate binary at k
+'''
 def generate_binary_at_k(y_scores, k):
     cutoff_index = int(len(y_scores) * (k / 100.0))
     test_predictions_binary = [1 if x < cutoff_index else 0 for x in range(len(y_scores))]
     return test_predictions_binary
 
-
+'''
+Generate precision at k
+'''
 def precision_at_k(y_true, y_scores, k):
     y_scores, y_true = joint_sort_descending(np.array(y_scores), np.array(y_true))
     preds_at_k = generate_binary_at_k(y_scores, k)
     precision = precision_score(y_true, preds_at_k)
     return precision
 
-
+'''
+Generate recall at k
+'''
 def recall_at_k(y_true, y_scores, k):
     y_scores, y_true = joint_sort_descending(np.array(y_scores), np.array(y_true))
     preds_at_k = generate_binary_at_k(y_scores, k)
     recall = recall_score(y_true, preds_at_k)
     return recall
 
+'''
+Generate f1 score at k
+'''
 def f1_at_k(y_true, y_scores, k):
 
     precision = precision_at_k(y_true, y_scores, k)
@@ -232,7 +247,9 @@ def f1_at_k(y_true, y_scores, k):
 
     return 2 * (precision * recall)/(precision + recall)
 
-
+'''
+Plot the precision recall curve
+'''
 def plot_precision_recall_n(y_true, y_prob, model_name):
     from sklearn.metrics import precision_recall_curve
     y_score = y_prob
@@ -271,5 +288,4 @@ def clf_loop(models_to_run, clfs, grid, X_train, X_test, y_train, y_test):
                                               f1_at_k(y_test_sorted, y_pred_probs_sorted, 20.0)]
             plot_precision_recall_n(y_test,y_pred_probs,clf)
     return results_df
-
 
